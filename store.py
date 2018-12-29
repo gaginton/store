@@ -3,18 +3,19 @@ import bottle
 import os
 from sys import argv
 import json
-import pymysql
+import pymysql          #SKIP 2 lines after import
+
 
 bottle.TEMPLATE_PATH.insert(0,os.path.dirname(os.path.abspath(__file__)))
 
 connection = pymysql.connect(host='localhost',
                              user='root',
-                             password='root',
+                             password='GintonHIJK66',
                              db='store',
                              charset='utf8',
                              cursorclass=pymysql.cursors.DictCursor)
 
-# LOAD ALL THE PAGES
+
 @get("/admin")
 def admin_portal():
 	return template("pages/admin.html")
@@ -23,22 +24,20 @@ def admin_portal():
 def index():
     return template("index.html")
 
-@get('/js/<filename:re:.*\.js>')
+@get('/js/<filename:re:.*/.js>')
 def javascripts(filename):
     return static_file(filename, root='js')
 
-@get('/css/<filename:re:.*\.css>')
+@get('/css/<filename:re:.*/.css>')
 def stylesheets(filename):
     return static_file(filename, root='css')
 
-@get('/images/<filename:re:.*\.(jpg|png|gif|ico)>')
+@get('/images/<filename:re:.*/.(jpg|png|gif|ico)>')
 def images(filename):
     return static_file(filename, root='images')
 
 
-
 # WHERE CODE ADDED BEGINS
-
 # CREATING A CATEGORY
 @post("/category")
 def create_category():
@@ -64,7 +63,7 @@ def create_category():
                     connection.commit()         #commits changes so it can be seen in database
                     return json.dumps(
                     {"STATUS": "SUCCESS", "MSG": "Category created successfully", "cat_id": newest_id, "CODE": 201})
-                                        #should close connection to database with connection.close()
+                                        #should close connection to database with connection.close()?
     except:
         return json.dumps({"STATUS": "ERROR", "MSG": "Internal error", "cat_id": None, "CODE": 500})
 
@@ -75,7 +74,7 @@ def create_category():
 def delete_category(id):
     try:
         with connection.cursor() as cursor:
-            delete_cat = ('DELETE FROM category WHERE cat_id = {}'.format(catid))
+            delete_cat = ('DELETE FROM category WHERE cat_id = {}'.format(id))
             cursor.execute(delete_cat)
             connection.commit()
             return json.dumps({'STATUS': 'SUCCESS', 'MSG': 'The category was deleted successfully'})
@@ -91,7 +90,7 @@ def list_categories():
         with connection.cursor() as cursor:
             load_cats = "SELECT * FROM category"
             cursor.execute(load_cats)
-            result = cursor.fetchall()          #list of all the categories
+            result = cursor.fetchall()
             return json.dumps({'STATUS': 'SUCCESS', 'CATEGORIES': result})
     except:
         return json.dumps({'STATUS' : 'ERROR', 'MSG': "500: Internal error"})
@@ -123,7 +122,7 @@ def define_product():
         "img_url": request.forms.get('img_url') if request.forms.get('img_url') else None,
         "id": int(request.forms.get('id')) if request.forms.get('id') else None
     }
-    if product_dict['id']:  #IF PRODUCT ID EXISTS, EDIT PRODUCT
+    if product_dict['id']:      #IF PRODUCT ID EXISTS, EDIT PRODUCT
         return edit_product(product_dict)
     else:       #ADD PRODUCTS THAT DONT EXIST ALREADY
         try:
@@ -135,7 +134,7 @@ def define_product():
         except:
             return json.dumps({'STATUS':'ERROR', 'MSG':"500: Error"})
 
-def edit_product(product_dict):
+def edit_product():
     try:
         with connection.cursor() as cursor:
             sql = ('UPDATE products SET category=%s, description=%s, price=%s, title=%s, favorite=%s, img_url=%s WHERE id=%s')
@@ -156,7 +155,7 @@ def list_all_products(id):
             sql = ('SELECT * FROM products')
             cursor.execute(sql)
             result = cursor.fetchall()
-            return json.dumps({'STATUS':'SUCCESS','PRODUCTS': result})
+            return json.dumps({'STATUS': 'SUCCESS','PRODUCTS': result})
     except:
         return json.dumps({'STATUS' : 'ERROR', 'MSG': "500: Internal error listing product"})
 
@@ -199,4 +198,4 @@ def list_products_cat(id):
 
 
 if __name__ == "__main__":
-    run(host='localhost', port=7000)
+    run(host='localhost', port=7000, reloader=True)
