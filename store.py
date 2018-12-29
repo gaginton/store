@@ -42,19 +42,20 @@ def images(filename):
 # CREATING A CATEGORY
 @post("/category")
 def create_category():
-    new_cat = request.forms.get('name')
+    new_cat = request.forms.get('cat_name')
     if not new_cat:
         return json.dumps({"STATUS": "ERROR", "MSG": "Category name missing", "cat_id": None, "CODE": 400})
     try:
         with connection.cursor() as cursor:
-            search_for_cat = """SELECT cat_name FROM category"""
+            search_for_cat = "SELECT cat_name FROM category"        #DO I NEED 3 QUOTATION MARkS?
             cursor.execute(search_for_cat)
             category_list = cursor.fetchall()
 
             for cat in category_list:
-                if new_cat == cat[""]:
+                print(cat)
+                if not new_cat:
                     return json.dumps(
-                        {"STATUS": "ERROR", "MSG": "Category already exists. Please enter something unique", "cat_id": cat, "CODE": 200})
+                        {"STATUS": "ERROR", "MSG": "Category already exists. Please enter something unique", "cat_id": cat[id], "CODE": 200})
 
                 else:
                     add_category = "INSERT INTO category VALUES('{}')".format(new_cat)
@@ -70,8 +71,8 @@ def create_category():
 
 
 # DELETING A CATEGORY
-@delete("/category/<catid:int>")
-def delete_category(catid):
+@delete("/category/<id:int>")
+def delete_category(id):
     try:
         with connection.cursor() as cursor:
             delete_cat = ('DELETE FROM category WHERE cat_id = {}'.format(catid))
@@ -185,11 +186,11 @@ def delete_product(id):
 
 
 # LIST ALL PRODUCTS BY CATEGORY
-@get('/category/<catid>/products')
+@get('/category/<id>/products')
 def list_products_cat(id):
     try:
         with connection.cursor() as cursor:
-            sql = ('SELECT category, description, price, title, favorite, img_url, id FROM products WHERE category = {} ORDER BY favorite DESC, creation_date ASC'.format(catid) )
+            sql = ('SELECT * FROM products WHERE category = {} ORDER BY favorite DESC, creation_date ASC'.format(id) )
             cursor.execute(sql)
             result = cursor.fetchall()
             return json.dumps({'STATUS':'SUCCESS','PRODUCTS': result})
