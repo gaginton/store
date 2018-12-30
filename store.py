@@ -10,7 +10,7 @@ bottle.TEMPLATE_PATH.insert(0,os.path.dirname(os.path.abspath(__file__)))
 
 connection = pymysql.connect(host='localhost',
                              user='root',
-                             password='GintonHIJK66',
+                             password='root',
                              db='store',
                              charset='utf8',
                              cursorclass=pymysql.cursors.DictCursor)
@@ -24,15 +24,15 @@ def admin_portal():
 def index():
     return template("index.html")
 
-@get('/js/<filename:re:.*/.js>')
+@get('/js/<filename:re:.*\.js>')
 def javascripts(filename):
     return static_file(filename, root='js')
 
-@get('/css/<filename:re:.*/.css>')
+@get('/css/<filename:re:.*\.css>')
 def stylesheets(filename):
     return static_file(filename, root='css')
 
-@get('/images/<filename:re:.*/.(jpg|png|gif|ico)>')
+@get('/images/<filename:re:.*\.(jpg|png|gif|ico)>')
 def images(filename):
     return static_file(filename, root='images')
 
@@ -41,9 +41,9 @@ def images(filename):
 # CREATING A CATEGORY
 @post("/category")
 def create_category():
-    new_cat = request.forms.get('cat_name')
+    new_cat = request.forms.get('category')
     if not new_cat:
-        return json.dumps({"STATUS": "ERROR", "MSG": "Category name missing", "cat_id": None, "CODE": 400})
+        return json.dumps({"STATUS": "ERROR", "MSG": "Category name missing", "category": None, "CODE": 400})
     try:
         with connection.cursor() as cursor:
             search_for_cat = "SELECT cat_name FROM category"        #DO I NEED 3 QUOTATION MARkS?
@@ -54,7 +54,7 @@ def create_category():
                 print(cat)
                 if not new_cat:
                     return json.dumps(
-                        {"STATUS": "ERROR", "MSG": "Category already exists. Please enter something unique", "cat_id": cat[id], "CODE": 200})
+                        {"STATUS": "ERROR", "MSG": "Category already exists. Please enter something unique", "category": cat[id], "CODE": 200})
 
                 else:
                     add_category = "INSERT INTO category VALUES('{}')".format(new_cat)
@@ -111,7 +111,7 @@ def load_products():
 
 
 # ADD AND EDIT PRODUCTS
-@post("/products")
+@post("/product")
 def define_product():
     product_dict = {
         "category": int(request.forms.get('category')) if request.forms.get('category') else None,

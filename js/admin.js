@@ -160,6 +160,7 @@ StoreAdmin.bineForms = function(){
 	addProductForm.submit(function(e){
 		e.preventDefault();
 		var submittedForm = $(this);
+		console.log(submittedForm.serialize());
 		$.post("/product",submittedForm.serialize(),function(result){
 			if (result["STATUS"] == "ERROR"){
 				alert(result["MSG"]);
